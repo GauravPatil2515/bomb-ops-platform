@@ -2,95 +2,67 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* DEFUSE PROTOCOL - Mission Control Design System
+All colors MUST be HSL for perfect theming.
 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Mission Control Dark Theme */
+    --background: 220 15% 8%;
+    --foreground: 120 100% 85%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 220 15% 10%;
+    --card-foreground: 120 100% 85%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 220 15% 12%;
+    --popover-foreground: 120 100% 85%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Neon Green Primary (Mission Status) */
+    --primary: 120 100% 50%;
+    --primary-foreground: 220 15% 8%;
+    --primary-glow: 120 100% 60%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Electric Blue Secondary (System Active) */
+    --secondary: 195 100% 50%;
+    --secondary-foreground: 220 15% 8%;
+    --secondary-glow: 195 100% 60%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Danger Red (Critical Alert) */
+    --destructive: 0 100% 55%;
+    --destructive-foreground: 220 15% 8%;
+    --destructive-glow: 0 100% 65%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Terminal Green Muted */
+    --muted: 120 20% 15%;
+    --muted-foreground: 120 30% 65%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Warning Amber */
+    --accent: 45 100% 50%;
+    --accent-foreground: 220 15% 8%;
+    --accent-glow: 45 100% 60%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Interface Elements */
+    --border: 120 20% 20%;
+    --input: 220 15% 12%;
+    --ring: 120 100% 50%;
 
-    --radius: 0.5rem;
+    --radius: 0.375rem;
 
-    --sidebar-background: 0 0% 98%;
+    /* Mission Control Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)), hsl(var(--secondary-glow)));
+    --gradient-danger: linear-gradient(135deg, hsl(var(--destructive)), hsl(var(--destructive-glow)));
+    --gradient-terminal: linear-gradient(135deg, hsl(var(--background)), hsl(var(--muted)));
+    
+    /* Mission Control Shadows */
+    --shadow-neon: 0 0 20px hsl(var(--primary-glow) / 0.3);
+    --shadow-danger: 0 0 20px hsl(var(--destructive-glow) / 0.3);
+    --shadow-glow: 0 4px 20px -2px hsl(var(--primary) / 0.2);
 
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --animation-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 }
 
@@ -100,6 +72,129 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-mono;
   }
+}
+
+@layer components {
+  /* Mission Control Components */
+  .terminal-card {
+    @apply bg-card border border-border rounded-lg p-6 shadow-lg;
+    background: linear-gradient(135deg, hsl(var(--card)), hsl(var(--muted) / 0.5));
+    box-shadow: var(--shadow-glow), inset 0 1px 0 hsl(var(--border));
+  }
+
+  .neon-glow {
+    box-shadow: var(--shadow-neon);
+  }
+
+  .danger-glow {
+    box-shadow: var(--shadow-danger);
+  }
+
+  .countdown-display {
+    @apply font-mono text-4xl font-bold tracking-wider;
+    text-shadow: 0 0 10px currentColor;
+    animation: var(--animation-pulse);
+  }
+
+  .scanlines {
+    position: relative;
+  }
+
+  .scanlines::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      transparent 50%, 
+      hsl(var(--primary) / 0.03) 50%
+    );
+    background-size: 100% 4px;
+    pointer-events: none;
+    animation: scanlines 0.1s linear infinite;
+  }
+
+  .glitch-text {
+    position: relative;
+    animation: glitch 2s infinite;
+  }
+
+  .mission-button {
+    @apply px-6 py-3 font-bold text-primary-foreground bg-primary rounded transition-all duration-300;
+    background: var(--gradient-primary);
+    box-shadow: var(--shadow-neon);
+    transform: translateY(0);
+    transition: var(--transition-smooth);
+  }
+
+  .mission-button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-neon), 0 8px 25px -8px hsl(var(--primary) / 0.6);
+  }
+
+  .danger-button {
+    @apply px-6 py-3 font-bold text-destructive-foreground bg-destructive rounded transition-all duration-300;
+    background: var(--gradient-danger);
+    box-shadow: var(--shadow-danger);
+  }
+
+  .status-online {
+    @apply text-primary;
+    text-shadow: 0 0 8px currentColor;
+  }
+
+  .status-danger {
+    @apply text-destructive;
+    text-shadow: 0 0 8px currentColor;
+    animation: var(--animation-pulse);
+  }
+
+  .terminal-input {
+    @apply bg-input border border-border rounded px-4 py-2 text-foreground;
+    box-shadow: inset 0 2px 4px hsl(var(--background) / 0.5);
+  }
+
+  .terminal-input:focus {
+    @apply ring-2 ring-primary border-primary outline-none;
+    box-shadow: var(--shadow-neon), inset 0 2px 4px hsl(var(--background) / 0.5);
+  }
+}
+
+@layer utilities {
+  .text-glow {
+    text-shadow: 0 0 10px currentColor;
+  }
+
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .gradient-secondary {
+    background: var(--gradient-secondary);
+  }
+
+  .gradient-danger {
+    background: var(--gradient-danger);
+  }
+
+  .gradient-terminal {
+    background: var(--gradient-terminal);
+  }
+}
+
+@keyframes glitch {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-2px); }
+  40% { transform: translateX(2px); }
+  60% { transform: translateX(-1px); }
+  80% { transform: translateX(1px); }
+}
+
+@keyframes scanlines {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(4px); }
 }
