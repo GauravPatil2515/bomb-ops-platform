@@ -1,9 +1,17 @@
 import { create } from 'zustand';
-import { GameState, GameMode, Difficulty, GameStatus, GameGlobals, ModuleState } from '@/types/game';
+import { GameState, GameMode, Difficulty, GameStatus, GameGlobals, ModuleState, ModuleType } from '@/types/game';
 import { DeterministicRNG, generateSeed } from '@/lib/rng';
 import { WiresModule } from '@/lib/modules/wires';
 import { ButtonModule } from '@/lib/modules/button';
 import { SymbolsModule } from '@/lib/modules/symbols';
+import { MazeModule } from '@/lib/modules/maze';
+import { MorseModule } from '@/lib/modules/morse';
+import { PasswordModule } from '@/lib/modules/password';
+import { SequenceWiresModule } from '@/lib/modules/sequenceWires';
+import { CapacitorModule } from '@/lib/modules/capacitor';
+import { MemoryModule } from '@/lib/modules/memory';
+import { SimonModule } from '@/lib/modules/simon';
+import { WordPanelModule } from '@/lib/modules/wordPanel';
 
 interface GameStore extends GameState {
   // Actions
@@ -18,6 +26,15 @@ interface GameStore extends GameState {
   timerInterval?: NodeJS.Timeout;
   startTimer: () => void;
   stopTimer: () => void;
+  // Accessibility & Settings
+  colorBlindMode: boolean;
+  reducedMotion: boolean;
+  audioEnabled: boolean;
+  lowGraphics: boolean;
+  setColorBlindMode: (enabled: boolean) => void;
+  setReducedMotion: (enabled: boolean) => void;
+  setAudioEnabled: (enabled: boolean) => void;
+  setLowGraphics: (enabled: boolean) => void;
 }
 
 const TIMER_DURATIONS = {
@@ -33,7 +50,52 @@ const MAX_STRIKES = {
 const modules = {
   wires: new WiresModule(),
   button: new ButtonModule(),
-  symbols: new SymbolsModule()
+  symbols: new SymbolsModule(),
+  maze: new MazeModule(),
+  morse: new MorseModule(),
+  password: new PasswordModule(),
+  sequenceWires: new SequenceWiresModule(),
+  capacitor: new CapacitorModule(),
+  memory: new MemoryModule(),
+  simon: new SimonModule(),
+  wordPanel: new WordPanelModule()
+};
+
+// Module pools and weights by difficulty
+const MODULE_POOLS = {
+  novice: [
+    { type: 'wires' as ModuleType, weight: 2 },
+    { type: 'button' as ModuleType, weight: 2 },
+    { type: 'symbols' as ModuleType, weight: 2 },
+    { type: 'maze' as ModuleType, weight: 1 },
+    { type: 'morse' as ModuleType, weight: 1 },
+    { type: 'password' as ModuleType, weight: 1 }
+  ],
+  pro: [
+    { type: 'wires' as ModuleType, weight: 2 },
+    { type: 'button' as ModuleType, weight: 2 },
+    { type: 'symbols' as ModuleType, weight: 2 },
+    { type: 'maze' as ModuleType, weight: 1 },
+    { type: 'morse' as ModuleType, weight: 1 },
+    { type: 'password' as ModuleType, weight: 1 },
+    { type: 'sequenceWires' as ModuleType, weight: 1 },
+    { type: 'simon' as ModuleType, weight: 1 },
+    { type: 'capacitor' as ModuleType, weight: 1 },
+    { type: 'memory' as ModuleType, weight: 1 }
+  ],
+  expert: [
+    { type: 'wires' as ModuleType, weight: 1 },
+    { type: 'button' as ModuleType, weight: 1 },
+    { type: 'symbols' as ModuleType, weight: 2 },
+    { type: 'maze' as ModuleType, weight: 1 },
+    { type: 'morse' as ModuleType, weight: 1 },
+    { type: 'password' as ModuleType, weight: 1 },
+    { type: 'sequenceWires' as ModuleType, weight: 1 },
+    { type: 'simon' as ModuleType, weight: 1 },
+    { type: 'capacitor' as ModuleType, weight: 1 },
+    { type: 'memory' as ModuleType, weight: 1 },
+    { type: 'wordPanel' as ModuleType, weight: 1 }
+  ]
 };
 
 function generateGlobals(rng: DeterministicRNG): GameGlobals {
@@ -66,11 +128,45 @@ function generateGlobals(rng: DeterministicRNG): GameGlobals {
   };
 }
 
-function generateModules(seed: string, globals: GameGlobals): ModuleState[] {
+function generateModules(seed: string, globals: GameGlobals, mode: GameMode, difficulty: Difficulty): ModuleState[] {
   const rng = new DeterministicRNG(seed + '_modules');
-  const moduleTypes = ['wires', 'button', 'symbols'] as const;
   
-  return moduleTypes.map((type, index) => ({
+  // Get module count based on mode
+  const moduleCount = mode === 'quick' ? 3 : 5;
+  
+  // Get available modules for difficulty
+  const availableModules = MODULE_POOLS[difficulty];
+  
+  // Create weighted selection
+  const weightedModules: ModuleType[] = [];
+  availableModules.forEach(({ type, weight }) => {
+    for (let i = 0; i < weight; i++) {
+      weightedModules.push(type);
+    }
+  });
+  
+  // Select unique modules
+  const selectedTypes: ModuleType[] = [];
+  const uniqueTypes = [...new Set(availableModules.map(m => m.type))];
+  
+  // Ensure at least one "confidence" module (wires/button/symbols)
+  const confidenceModules = ['wires', 'button', 'symbols'].filter(type => 
+    uniqueTypes.includes(type as ModuleType)
+  );
+  if (confidenceModules.length > 0) {
+    selectedTypes.push(rng.choice(confidenceModules) as ModuleType);
+  }
+  
+  // Fill remaining slots
+  while (selectedTypes.length < moduleCount) {
+    const candidate = rng.choice(weightedModules);
+    if (!selectedTypes.includes(candidate)) {
+      selectedTypes.push(candidate);
+    }
+  }
+  
+  // Generate modules
+  return selectedTypes.map((type, index) => ({
     id: `${type}_${index}`,
     type,
     solved: false,
@@ -97,11 +193,17 @@ export const useGameStore = create<GameStore>((set, get) => ({
   modules: [],
   status: 'intro',
   
+  // Settings
+  colorBlindMode: false,
+  reducedMotion: false,
+  audioEnabled: true,
+  lowGraphics: false,
+  
   initializeGame: (mode, difficulty, seed) => {
     const gameSeed = seed || generateSeed();
     const rng = new DeterministicRNG(gameSeed);
     const globals = generateGlobals(rng);
-    const gameModules = generateModules(gameSeed, globals);
+    const gameModules = generateModules(gameSeed, globals, mode, difficulty);
     
     set({
       seed: gameSeed,
@@ -237,5 +339,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
       clearInterval(timerInterval);
       set({ timerInterval: undefined });
     }
-  }
+  },
+  
+  // Accessibility & Settings
+  setColorBlindMode: (enabled) => set({ colorBlindMode: enabled }),
+  setReducedMotion: (enabled) => set({ reducedMotion: enabled }),
+  setAudioEnabled: (enabled) => set({ audioEnabled: enabled }),
+  setLowGraphics: (enabled) => set({ lowGraphics: enabled })
 }));

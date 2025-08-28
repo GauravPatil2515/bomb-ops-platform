@@ -7,11 +7,12 @@ import { SkipForward } from 'lucide-react';
 
 interface IntroSequenceProps {
   onComplete: () => void;
+  onSkip: () => void;
   mode: 'quick' | 'full';
   difficulty: 'novice' | 'pro' | 'expert';
 }
 
-export default function IntroSequence({ onComplete, mode, difficulty }: IntroSequenceProps) {
+export default function IntroSequence({ onComplete, onSkip, mode, difficulty }: IntroSequenceProps) {
   const [currentStage, setCurrentStage] = useState(0);
   const [showSkip, setShowSkip] = useState(false);
 
@@ -45,7 +46,7 @@ export default function IntroSequence({ onComplete, mode, difficulty }: IntroSeq
   }, [onComplete]);
 
   const handleSkip = () => {
-    onComplete();
+    onSkip();
   };
 
   return (
