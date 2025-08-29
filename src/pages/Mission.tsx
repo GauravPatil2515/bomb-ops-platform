@@ -51,6 +51,7 @@ export default function Mission() {
     return (
       <IntroSequence 
         onComplete={handleIntroComplete}
+        onSkip={handleIntroComplete}
         mode={mode}
         difficulty={difficulty}
       />
